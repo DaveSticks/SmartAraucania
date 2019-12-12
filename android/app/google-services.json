@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "476373779213",
+    "firebase_url": "https://smartemuco-e8460.firebaseio.com",
+    "project_id": "smartemuco-e8460",
+    "storage_bucket": "smartemuco-e8460.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476373779213:android:8a1f0f920a06849aba2644",
+        "android_client_info": {
+          "package_name": "com.smartemuco"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "476373779213-i936sv7uo4ov91vmppci2omkst2lgs42.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smartemuco",
+            "certificate_hash": "501e67f2be0815583dc8a6383c747fcdc6634eeb"
+          }
+        },
+        {
+          "client_id": "476373779213-vekiihl8uoug7ule7lllanpejv542qas.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXTcqI81KVsvWhgQsZHT528i-46wo2K6A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "476373779213-vekiihl8uoug7ule7lllanpejv542qas.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
