@@ -26,12 +26,42 @@ export default class Formulario extends Component {
       horas: 2,  // Maximo de horas de anticipacion a una reserva
       animation: new Animated.Value(0),
       mesa: 0,
-      silla: 'E'
+      silla: 'E',
+      maxCupos: 32,
+      status: false
     };
   }
 
+  checkSilla = (id) => {
+
+    var fechaSeleccionada = this.parseDate(this.state.fecha);
+    var ref = firebase.database().ref('fechas/cowork/'+fechaSeleccionada+'/'+this.state.horario+'/'+this.state.mesa)
+
+    console.log("Mesa: " + this.state.mesa + " Silla: " + id +  " Fecha: " + fechaSeleccionada)
+
+    thus = this
+
+    //Con un child_added y un foreach puede funcionar
+
+    ref.on('value', (dataSnapshot) => {
+
+      if (dataSnapshot.child(id).exists()){
+        thus.setState({
+          status: true
+        })
+      } else {
+        thus.setState({
+          status: false
+        })
+      }
+
+    })
+
+    return this.state.status
+
+  }
+
   reservarCowork = () => {
-    console.log("Funcion en construccion")
     this.handleClose()
     this.onButtonPress()
   }
@@ -69,7 +99,7 @@ export default class Formulario extends Component {
       mesa: id
     })
 
-    console.log('xd')
+    this.forceUpdate();
 
   };
 
@@ -179,6 +209,7 @@ export default class Formulario extends Component {
   }
 
   checkWeek = async (userDatesRef, callback) => {
+
     var monthSelected = this.state.fecha.getMonth();
     var anioSelected = this.state.fecha.getFullYear();
 
@@ -217,8 +248,13 @@ export default class Formulario extends Component {
 
         console.log(fechaFinal);
 
-        if (data.hasChild(fechaFinal)) {
-          counter += 1;
+        if (data.hasChild(fechaFinal)) { //Tiene un hijo llamado igual que la fecha
+
+          if (data.child(fechaFinal).hasChildren()){ // El hijo tiene hijos
+            counter += data.child(fechaFinal).numChildren(); //Se suma la cantidad de hijos al contador
+            console.log("Contador: " + counter)
+          }
+
         }
 
         aux++;
@@ -285,41 +321,35 @@ export default class Formulario extends Component {
     } else if (sectionId == 2) {
 
       let thus = this
+      var mesa = this.state.mesa
+      var silla = this.state.silla
       var userId = this.state.id
+      var cupos = this.state.maxCupos
 
       fechaRef.once('value').then(function(data) {
 
-        var horarioExists = data.hasChild(horario)
-        var cupos = ''
-        var ownerId = data.child(horario+'/id_duenio').val()
+        // Son 32 Cupos en total
 
-        if (horarioExists) { //El horario seleccionado existe
-          cupos = data.child(horario+'/cupos').val() //get de los cupos en firebase
+        var horarioExists = data.hasChild(horario) //El horario escogido existe?
+        var hasMesas = data.child(horario).hasChildren()
+        var ownerId = data.child(horario+'/'+mesa+'/'+silla+'/id_duenio').val()
 
-          if (userId == ownerId) {
-            cuposRestantes = parseInt(cupos, 10)
-          } else {
-            cuposRestantes = parseInt(cupos, 10) - 1
-          }
+        // Si no tiene hijos se coloca por defecto
+        // Si existe al menos un hijo, se extrae el total y se le resta uno y se sube
 
-        } else { //El horario no existe
+        if (!hasMesas) {
 
-          cupos = 32  //Cupos por defecto
-          cuposRestantes = cupos - 1
-
-        }
-
-        console.log("Cupos restantes: " + cuposRestantes)
-
-        if (cuposRestantes > 0) {
-
-          fechaRef.child(horario+'/'+thus.state.mesa+'/'+thus.state.silla).set({
-            nombre: thus.state.name,
+          fechaRef.child(horario).update({
+            cupos_restantes: cupos - 1
           })
 
-          userRef.child(horario).set({
+          fechaRef.child(horario+'/'+mesa+'/'+silla).update({
             nombre: thus.state.name,
-            cantidad: thus.state.cant,
+            id_duenio: userId
+          })
+
+          userRef.child(horario+'/'+mesa+'/'+silla).set({
+            nombre: thus.state.name,
           });
 
           Alert.alert(
@@ -328,10 +358,47 @@ export default class Formulario extends Component {
           );
 
         } else {
-          Alert.alert(
-            'Sin cupos',
-            'No queda ningún cupo disponible en el espacio de Co-work'
-          )
+
+          // Obtiene el anterior y escribe
+
+          var cupos_restantes = data.child(horario+'/cupos_restantes').val()
+
+          userRef.child(horario).once('value').then((data) => {
+
+            if (data.numChildren() > 0) {
+              Alert.alert("¡Lo sentimos!", "Ya hay una reserva a tu nombre para esta fecha y/u horario")
+            } else {
+
+              cupos_restantes = parseInt(cupos_restantes, 0)
+
+              if ((cupos_restantes - 1) >= 0) {
+
+                fechaRef.child(horario).update({
+                  cupos_restantes: (cupos_restantes - 1)
+                })
+
+                fechaRef.child(horario+'/'+mesa+'/'+silla).update({
+                  nombre: thus.state.name,
+                  id_duenio: userId
+                })
+
+                userRef.child(horario+'/'+mesa+'/'+silla).set({
+                  nombre: thus.state.name,
+                });
+
+                Alert.alert(
+                  '¡Genial!',
+                  'Se ha agregado  la fecha exitosamente. Puedes revisar todas tus reservas en su seccion en el menú desplegable',
+                );
+
+              } else {
+                Alert.alert("Cupos agotados", "¡Ya no quedan cupos disponibles!")
+              }
+
+            }
+
+          })
+
         }
 
       })
@@ -341,111 +408,6 @@ export default class Formulario extends Component {
     }
 
   }
-
-/*  writeData = (fechaRef, userRef, sectionId) => {
-
-
-    // Si tiene un hijo que contenga el contador de cupos que verifique cuanto queda
-    // Si no tiene un hijo que contenga el contador de cupos, lo escribe a tope
-
-    var horario = this.state.horario;
-    var horario_2 = ''
-
-    if (horario == 'manana') {
-      horario_2 = 'tarde'
-    } else {
-      horario_2 = 'manana'
-    }
-
-    thus = this;
-
-    fechaRef.once('value').then(function(data) {
-      var hasHorario = data.hasChild(horario);
-      var hasHorario_2 = data.hasChild(horario_2);
-      var cupos = null
-
-      console.log(data.child(horario).val().id_duenio)
-
-      if (hasHorario) {
-        if (thus.state.id == data.child(horario).val().id_duenio) {
-          if (sectionId == 2) {
-
-            cupos = data.child(horario).val().cupos
-
-            fechaRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-              cupos: cupos
-            });
-
-            userRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-            });
-          } else {
-            fechaRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-              id_duenio: thus.state.id,
-            });
-
-            userRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-            });
-          }
-
-          Alert.alert(
-            '¡Genial!',
-            'Se ha editado la fecha exitosamente. Puedes revisar todas tus reservas en su seccion en el menú desplegable',
-          );
-        } else {
-          Alert.alert(
-            'Este horario ya está reservado por otra persona',
-            'Revise la disponibilidad y seleccione otra fecha u horario del día',
-          );
-        }
-      } else {
-        if (hasHorario_2) {
-          if (thus.state.id == data.child(horario_2).val().id_duenio) {
-            Alert.alert(
-              'Lo sentimos',
-              'Solo puedes reservar un espacio por medio día, es decir, lo puedes reservar solo para mañana o solo para la tarde. Revisa nuestra sección de preguntas frecuentes para más dudas'
-            );
-          } else {
-            fechaRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-              id_duenio: thus.state.id,
-            });
-            userRef.child(horario).set({
-              nombre: thus.state.name,
-              cantidad: thus.state.cant,
-            });
-            Alert.alert(
-              '¡Genial!',
-              'Se ha agregado la fecha exitosamente. Puedes revisar todas tus reservas en su seccion en el menu desplegable',
-            );
-          }
-        } else {
-          fechaRef.child(horario).set({
-            nombre: thus.state.name,
-            cantidad: thus.state.cant,
-            id_duenio: thus.state.id,
-          });
-          userRef.child(horario).set({
-            nombre: thus.state.name,
-            cantidad: thus.state.cant,
-          });
-          Alert.alert(
-            '¡Genial!',
-            'Se ha agregado la fecha exitosamente. Puedes revisar todas tus reservas en su seccion en el menu desplegable',
-          );
-        }
-      }
-    });
-  };
-*/
 
   onButtonPress = async () => {
 
@@ -491,6 +453,7 @@ export default class Formulario extends Component {
         '¡Lo sentimos!',
         'Las reservas deben realizarse a lo mucho con 2 horas de anticipación, previo al uso del espacio.',
       );
+
     } else {
 
       // Comprobamos condiciones para escribir
@@ -705,7 +668,6 @@ export default class Formulario extends Component {
 
           <Animated.View style={[StyleSheet.absoluteFill, styles.cover, backdrop]}>
 
-
             <View style={[styles.sheet]}>
 
               <Animated.View style={[styles.popup, slideUp]}>
@@ -713,7 +675,7 @@ export default class Formulario extends Component {
                   <Text style={{fontSize: 18, fontWeight: '200'}}>Mesa {this.state.mesa}</Text>
                   <Text style={{fontSize: 14, fontWeight: '200',  marginHorizontal: width*0.1, marginTop: 20}}>Para reservar tu espacio presiona uno de los que se encuentre disponible aquí abajo</Text>
 
-                  <LayoutSillas onPress={this.handleClickSilla} />
+                  <LayoutSillas onPress={this.handleClickSilla} status={this.checkSilla}/>
 
                   <TouchableOpacity onPress={this.handleClose} style={{width: width*0.7, alignItems: 'center'}}>
                     <View style={[styles.button, {width: width * 0.7}]}>
