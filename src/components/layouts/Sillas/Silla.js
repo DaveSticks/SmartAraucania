@@ -16,22 +16,43 @@ export default class Silla extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      status: this.props.status(this.props.id)
+      isDisabled: false
     }
   }
 
-  componentDidMount() {
-    var id = this.props.id
-    console.log("Status silla: " + this.props.status(id))
-  }
+  componentDidUpdate(nextProps) {
+
+     const { fbref } = this.props
+     if ( nextProps.fbref !== fbref ) {
+
+       console.log(this.props.fbref.toString())
+
+       this.props.fbref.on('value', (snapshot) => {
+
+         if (snapshot.child(this.props.id).exists()){
+           this.setState({
+             isDisabled: true
+           })
+         } else {
+           this.setState({
+             isDisabled: false
+           })
+         }
+
+       })
+
+     }
+
+    }
+
 
   render() {
 
     var id = this.props.id
 
     return (
-        <TouchableOpacity style={{marginHorizontal: 50}} onPress={() => this.props.onPress(id)} disabled={this.state.status}>
-          <View style={this.state.status ? styles.buttonDisabled : styles.buttonEnabled}>
+        <TouchableOpacity style={{marginHorizontal: 50}} onPress={() => this.props.onPress(id)} disabled={this.state.isDisabled}>
+          <View style={this.state.isDisabled ? styles.buttonDisabled : styles.buttonEnabled}>
             <Text style={styles.buttonText}>{this.props.id}</Text>
           </View>
         </TouchableOpacity>
@@ -55,7 +76,7 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 100,
-    backgroundColor: '#87D68D',
+    backgroundColor: 'red',
     justifyContent: 'center',
     alignItems: 'center'
   },

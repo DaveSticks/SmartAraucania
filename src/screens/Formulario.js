@@ -28,37 +28,8 @@ export default class Formulario extends Component {
       mesa: 0,
       silla: 'E',
       maxCupos: 32,
-      status: false
+      status: false,
     };
-  }
-
-  checkSilla = (id) => {
-
-    var fechaSeleccionada = this.parseDate(this.state.fecha);
-    var ref = firebase.database().ref('fechas/cowork/'+fechaSeleccionada+'/'+this.state.horario+'/'+this.state.mesa)
-
-    console.log("Mesa: " + this.state.mesa + " Silla: " + id +  " Fecha: " + fechaSeleccionada)
-
-    thus = this
-
-    //Con un child_added y un foreach puede funcionar
-
-    ref.on('value', (dataSnapshot) => {
-
-      if (dataSnapshot.child(id).exists()){
-        thus.setState({
-          status: true
-        })
-      } else {
-        thus.setState({
-          status: false
-        })
-      }
-
-    })
-
-    return this.state.status
-
   }
 
   reservarCowork = () => {
@@ -513,6 +484,9 @@ export default class Formulario extends Component {
     const itemId = navigation.getParam('itemId', '0');
     var texto = '';
 
+    var fecha = this.parseDate(this.state.fecha);
+    var ref = firebase.database().ref('fechas/cowork/'+fecha+'/'+this.state.horario+'/'+this.state.mesa)
+
     isDisabled = false;
     if (itemId == 0 || itemId == 1) {
       texto = 'Cantidad de personas';
@@ -675,7 +649,7 @@ export default class Formulario extends Component {
                   <Text style={{fontSize: 18, fontWeight: '200'}}>Mesa {this.state.mesa}</Text>
                   <Text style={{fontSize: 14, fontWeight: '200',  marginHorizontal: width*0.1, marginTop: 20}}>Para reservar tu espacio presiona uno de los que se encuentre disponible aquí abajo</Text>
 
-                  <LayoutSillas onPress={this.handleClickSilla} status={this.checkSilla}/>
+                  <LayoutSillas onPress={this.handleClickSilla} fbref={ref}/>
 
                   <TouchableOpacity onPress={this.handleClose} style={{width: width*0.7, alignItems: 'center'}}>
                     <View style={[styles.button, {width: width * 0.7}]}>

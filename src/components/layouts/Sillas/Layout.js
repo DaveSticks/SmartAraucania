@@ -19,15 +19,15 @@ export default class Layout extends Component {
     return (
       <View style={styles.container}>
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}>
-          <Silla id='A' onPress={this.props.onPress} status={this.props.status}/>
-          <Silla id='B' onPress={this.props.onPress} status={this.props.status}/>
+          <Silla id='A' onPress={this.props.onPress} fbref={this.props.fbref}/>
+          <Silla id='B' onPress={this.props.onPress} fbref={this.props.fbref}/>
         </View>
 
         <View style={{width: width*0.7, height: '40%', borderWidth: 0.6, borderColor: 'gray', marginVertical: 10}} />
 
         <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', }}>
-          <Silla id='C' onPress={this.props.onPress} status={this.props.status}/>
-          <Silla id='D' onPress={this.props.onPress} status={this.props.status}/>
+          <Silla id='C' onPress={this.props.onPress} fbref={this.props.fbref}/>
+          <Silla id='D' onPress={this.props.onPress} fbref={this.props.fbref}/>
         </View>
       </View>
     );
