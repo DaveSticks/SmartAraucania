@@ -53,7 +53,9 @@ export default class Register extends Component {
           });
 
           userRef.set({
-            level: 'user'
+            level: 'user',
+            nombre: displayName,
+            email: user.email,
           })
 
         })

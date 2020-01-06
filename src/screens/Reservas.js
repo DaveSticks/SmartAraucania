@@ -8,7 +8,7 @@ import {
   ScrollView,
   SectionList,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 
 import firebase from 'firebase';

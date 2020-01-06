@@ -6,14 +6,18 @@ import {
   Text,
   StyleSheet,
   Picker,
-  TouchableOpacity
+  TouchableOpacity,
+  Dimensions
 } from 'react-native';
+
+const WIDTH = Dimensions.get('window').width
+const HEIGHT = Dimensions.get('window').height
 
 import { Icon, Input } from 'react-native-elements'
 
 import firebase from 'firebase'
 
-export default class Config extends Component {
+export default class AppConfig extends Component {
 
   constructor(props) {
     super(props);
@@ -42,33 +46,44 @@ export default class Config extends Component {
   }
 
   setLimiteReservas = () => {
-    var configRef = firebase.database().ref('config/')
+    var configRef = firebase.database().ref('config/'+this.state.level)
     configRef.update({
       limiteReservas: this.state.limiteReservas
     })
   }
 
   setHorasMinimas = () => {
-    var configRef = firebase.database().ref('config/')
+    var configRef = firebase.database().ref('config/'+this.state.level)
     configRef.update({
       horasMinimas: this.state.horasMinimas
     })
   }
 
-  setUserLevel = () => {
-    var userRef = firebase.database().ref('usuarios/'+this.state.selectedId)
-    userRef.update({
-      level: this.state.level
-    })
+  setRoleConfig = () => {
+    this.setLimiteReservas()
+    this.setHorasMinimas()
   }
+
 
   render() {
     return (
       <View style={styles.wrapper}>
+        <Text style={styles.titulo}>Rol a modificar</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={this.state.level}
+            onValueChange={l => this.setState({level: l})}
+            style={{width: WIDTH * 0.9, alignItems: 'center', alignSelf: 'center', justifyContent: 'center'}}
+            mode="dropdown">
+            <Picker.Item label="Usuario" value="user" />
+            <Picker.Item label="Becado" value="becado" />
+            <Picker.Item label="Administrador" value="admin" />
+          </Picker>
+        </View>
         <Text style={styles.titulo}>Reservas</Text>
         <View style={styles.container}>
             <View style={styles.textContainer}>
-              <Text>Máx. reservas por semana</Text>
+              <Text>Máximo de reservas permitidas por semana</Text>
             </View>
             <View style={styles.inputContainer}>
               <Input
@@ -78,18 +93,10 @@ export default class Config extends Component {
                 keyboardType={'numeric'}
               />
             </View>
-            <View style={[styles.buttonContainer, {marginHorizontal: 30}]}>
-              <TouchableOpacity onPress={this.setLimiteReservas}
-              >
-                <View style={styles.button}>
-                  <Text style={styles.buttonText}>GUARDAR</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
         </View>
         <View style={styles.container}>
             <View style={styles.textContainer}>
-              <Text>Mín. horas antes de reservar</Text>
+              <Text>Mínimo de horas antes de reservar</Text>
             </View>
             <View style={styles.inputContainer}>
               <Input
@@ -99,49 +106,15 @@ export default class Config extends Component {
                 keyboardType={'numeric'}
               />
             </View>
-            <View style={[styles.buttonContainer, {marginHorizontal: 30 }]}>
-              <TouchableOpacity onPress={this.setHorasMinimas}
-              >
-                <View style={styles.button}>
-                  <Text style={styles.buttonText}>GUARDAR</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-        </View>
-        <Text style={styles.titulo}>Herramientas de administración</Text>
-        <View style={styles.container}>
-            <View style={styles.textContainer}>
-              <Text>Asignar rango a usuario</Text>
-            </View>
-            <View style={styles.inputContainer}>
-              <Input
-                placeholder='ID'
-                textAlign={'center'}
-                value={this.state.selectedId}
-                onChangeText={selectedId => this.setState({selectedId})}
-              />
-            </View>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={this.state.level}
-                onValueChange={l => this.setState({level: l})}
-                style={{width: 150}}
-                mode="dropdown">
-                <Picker.Item label="Usuario" value="user" />
-                <Picker.Item label="Becado" value="green" />
-                <Picker.Item label="Administrador" value="admin" />
-              </Picker>
-            </View>
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={this.setUserLevel}
+          <TouchableOpacity onPress={this.setRoleConfig}
           >
             <View style={styles.button}>
-              <Text style={styles.buttonText}>ASIGNAR RANGO</Text>
+              <Text style={styles.buttonText}>GUARDAR CAMBIOS</Text>
             </View>
           </TouchableOpacity>
         </View>
-
       </View>
     );
   }
@@ -149,13 +122,14 @@ export default class Config extends Component {
 
 const styles = StyleSheet.create({
   wrapper: {
-    flex: 1
+    flex: 1,
   },
   container: {
-    flex: .5,
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between', //replace with flex-end or center,
-    alignItems: 'center'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: '10%'
   },
   titulo: {
     fontSize: 20,
@@ -165,23 +139,25 @@ const styles = StyleSheet.create({
     color: '#2DC4BF'
   },
   textContainer: {
-    flex: .3,
+    flex: 0.6,
     marginLeft: 30,
     alignItems: 'center'
   },
   inputContainer: {
-    flex: .3,
+    flex: 0.3,
     marginHorizontal: 20,
     alignItems: 'center'
   },
   pickerContainer: {
-    flex: .5,
-    marginHorizontal: 10,
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    marginTop: '10%'
   },
   buttonContainer: {
-    flex: .4,
+    flex: 1,
     marginHorizontal: '10%',
+    marginTop: '10%'
   },
   button: {
     alignItems: 'center',

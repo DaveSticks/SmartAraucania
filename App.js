@@ -11,7 +11,8 @@ import Formulario from './src/screens/Formulario.js'
 import First from './src/screens/First.js'
 import Reservas from './src/screens/Reservas.js'
 import FAQ from './src/screens/FAQ.js'
-import Administracion from './src/screens/Administracion.js'
+import AppConfig from './src/screens/AppConfig.js'
+import UsersConfig from './src/screens/UsersConfig.js'
 import Sidebar from './src/components/sidebar/Sidebar.js'
 import firebase from 'firebase'
 import { GoogleSignin } from 'react-native-google-signin';
@@ -35,8 +36,12 @@ const FAQStack = createStackNavigator({
   FAQ: FAQ
 })
 
-const AdminStack = createStackNavigator({
-  Administracion: Administracion
+const AppConfigStack = createStackNavigator({
+  AppConfig: AppConfig
+})
+
+const UsersConfigStack = createStackNavigator({
+  UsersConfig: UsersConfig
 })
 
 const ReservasStack = createStackNavigator({
@@ -52,7 +57,8 @@ const AppStackNavigator = createStackNavigator({
 const AppDrawerNavigator = createDrawerNavigator({
   Inicio: AppStackNavigator,
   FAQ: FAQStack,
-  Administracion: AdminStack,
+  AppConfig: AppConfigStack,
+  UsersConfig: UsersConfigStack,
   Reservas: ReservasStack
 }, {
   contentComponent: ({navigation}) => {

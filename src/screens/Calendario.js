@@ -161,6 +161,7 @@ class Calendario extends Component<Props> {
   }
 
   renderItem(item) {
+
     const { navigation } = this.props;
     const itemId = navigation.getParam('itemId', '0');
 
@@ -171,6 +172,8 @@ class Calendario extends Component<Props> {
     } else {
       text = 'espacios'
     }
+
+    console.log("Item: " + item.manana.cantidad)
 
     if (item.manana !== undefined && item.tarde !== undefined) {
       return (
@@ -260,6 +263,7 @@ class Calendario extends Component<Props> {
           </View>
       );
     }
+
   }
 
   renderEmptyData() {

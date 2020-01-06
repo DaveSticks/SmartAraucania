@@ -41,8 +41,22 @@ export default class Login extends Component {
       const userInfo = await GoogleSignin.signIn();
       var provider = new firebase.auth.GoogleAuthProvider();
       const credential = provider.credential(userInfo.idToken, userInfo.accessToken)
-      firebase.auth().signInAndRetrieveDataWithCredential(credential).then(function() {
+      firebase.auth().signInAndRetrieveDataWithCredential(credential).then(function(userCredential) {
+
           nav.navigate('Home')
+          var user = firebase.auth().currentUser;
+          var userId = user.uid
+          var userRef = firebase.database().ref('usuarios/'+userId)
+          var isNewUser = userCredential.additionalUserInfo.isNewUser
+
+          if (isNewUser) {
+            userRef.set({
+              level: 'user',
+              nombre: user.displayName,
+              email: user.email,
+            })
+          }
+
         })
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {

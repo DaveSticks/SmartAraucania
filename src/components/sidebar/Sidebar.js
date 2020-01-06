@@ -122,7 +122,7 @@ export default class Sidebar extends Component {
       <TouchableOpacity
         style={{height: 50}}
         onPress={() => this.props.navigation.navigate(nav)}>
-        <Text style={styles.links}>{text}</Text>
+        <Text style={[styles.links, nav === 'UsersConfig' || nav === 'AppConfig' ? styles.linkAdmin : styles.linkNormal]}>{text}</Text>
       </TouchableOpacity>
     );
   }
@@ -209,7 +209,8 @@ export default class Sidebar extends Component {
             {this.navLink('Reservas', 'Mis reservas')}
             {this.navLink('Home', 'Selección de espacio')}
             {this.navLink('FAQ', 'FAQ')}
-            {this.state.userLevel == 'admin' ? this.navLink('Administracion', 'Ajustes de aplicación') : console.log("No es admin")}
+            {this.state.userLevel == 'admin' ? this.navLink('AppConfig', 'Ajustes de aplicación') : console.log("No es admin")}
+            {this.state.userLevel == 'admin' ? this.navLink('UsersConfig', 'Ajustes de usuarios') : console.log("No es admin")}
             <Divider style={{backgroundColor: 'gray'}} />
           </View>
           <Icon
@@ -258,7 +259,8 @@ export default class Sidebar extends Component {
           {this.navLink('Reservas', 'Mis reservas')}
           {this.navLink('Home', 'Selección de espacio')}
           {this.navLink('FAQ', 'Preguntas frecuentes')}
-          {this.state.userLevel == 'admin' ? this.navLink('Administracion', 'Ajustes de aplicación') : console.log("No es admin")}
+          {this.state.userLevel == 'admin' ? this.navLink('AppConfig', 'Ajustes de aplicación') : console.log("No es admin")}
+          {this.state.userLevel == 'admin' ? this.navLink('UsersConfig', 'Ajustes de usuarios') : console.log("No es admin")}
           <Divider style={{backgroundColor: 'gray'}} />
         </View>
         <Icon
@@ -318,4 +320,11 @@ const styles = StyleSheet.create({
     margin: 5,
     textAlign: 'left',
   },
+  linkNormal: {
+    color: '#000'
+  },
+  linkAdmin: {
+    color: '#000',
+    fontWeight: '600'
+  }
 });
