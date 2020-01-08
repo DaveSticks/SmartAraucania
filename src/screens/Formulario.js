@@ -692,26 +692,7 @@ const styles = StyleSheet.create({
     marginHorizontal: '10%',
     justifyContent: 'center',
   },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#2196F3',
-    borderRadius: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-    	width: 0,
-    	height: 2,
-    },
-    shadowOpacity: 0.32,
-    shadowRadius: 3,
 
-    elevation: 9,
-  },
-  buttonText: {
-    padding: 9,
-    color: 'white',
-    fontSize: 15
-  },
   cover: {
     backgroundColor: "rgba(0,0,0,.5)",
   },
