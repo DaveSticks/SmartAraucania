@@ -12,7 +12,8 @@ import {
   SectionList,
   Clipboard,
   Dimensions,
-  Animated
+  Animated,
+  Alert
 } from 'react-native';
 
 import MaterialInitials from 'react-native-material-initials/native';
@@ -160,11 +161,16 @@ export default class UsersConfig extends Component {
   }
 
   sendPasswordChangeEmail = () => {
-    console.log("Correo enviado")
+    firebase.auth().sendPasswordResetEmail(this.state.email).then(() => {
+      console.log("Correo enviado a " + this.state.email)
+      Alert.alert('Correo enviado', 'Se ha enviado un correo para restablecer la contraseña a ' + this.state.email)
+    }).catch((error) => {
+      Alert.alert('Error', error)
+    })
   }
 
   deleteUser = () => {
-    console.log("Usuario eliminado")
+    this.usersRef.child(this.state.id).remove()
   }
 
   renderItem = ({item, index}) => {
@@ -325,7 +331,7 @@ export default class UsersConfig extends Component {
                   name="md-trash"
                   color="#FF6663"
                   raised
-                  onPress={this.props.navigation.getParam('signOut')}
+                  onPress={this.deleteUser}
                 />
               </View>
 
