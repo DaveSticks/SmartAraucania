@@ -32,9 +32,8 @@ export default class Formulario extends Component {
       status: false,
       config: [],
       level: null,
-      horaInicio: '',
-      horaFinal: '',
-      horasHorario: ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"]
+      horasHorario: ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"],
+      isDisabled: false
     };
 
     this.horasManiana = ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"]
@@ -412,6 +411,8 @@ export default class Formulario extends Component {
     var seccion = ''
     thus = this
 
+
+
     if (this.state.horario == 'manana') {
       this.state.fecha.setHours(8, 59, 0, 0);
     } else if (this.state.horario == 'tarde') {
@@ -616,20 +617,13 @@ export default class Formulario extends Component {
                   )
                 }}
                 onValueChange={(data, selectedIndex) => {
-                    this.setState({
-                      horaInicio: data
-                    }, () => {
-                      var str = this.state.horaInicio
-                      var arr = str.split(":")
-                      console.log(JSON.stringify(arr))
 
-                      if (selectedIndex < this.state.horasHorario.length-1) {
-                        this.spHoraFinal.scrollToIndex(selectedIndex+2)
-                      }
+                  if (selectedIndex < this.state.horasHorario.length-3) {
+                    this.spHoraFinal.scrollToIndex(selectedIndex+2)
+                  } else {
+                    this.spHoraFinal.scrollToIndex(this.state.horasHorario.length-1)
+                  }
 
-                      console.log("Index de la tarde: " + this.spHoraFinal.getSelectedIndex())
-
-                    })
                 }}
                 wrapperHeight={100}
                 wrapperWidth={70}
@@ -653,10 +647,21 @@ export default class Formulario extends Component {
                   )
                 }}
                 onValueChange={(data, selectedIndex) => {
-                    console.log(JSON.stringify(data))
-                    this.setState({
-                      horaFinal: data
-                    })
+                  var strInicio = this.spHoraInicial.getSelected()
+                  var arrInicio = strInicio.split(":")
+                  var strFinal = data
+                  var arrFinal = strFinal.split(":")
+
+                  horaInicio = new Date(1970, 10, 1, arrInicio[0], arrInicio[1])
+                  horaFinal = new Date(1970, 10, 1, arrFinal[0], arrFinal[1])
+
+                  resta = (horaFinal - horaInicio) / 36e5
+
+                  if (resta <= 0.5) {
+                    this.spHoraFinal.scrollToIndex(this.spHoraInicial.getSelectedIndex()+2)
+                    console.log(resta)
+                  }
+
                 }}
                 wrapperHeight={100}
                 wrapperWidth={70}
@@ -670,7 +675,26 @@ export default class Formulario extends Component {
           </View>
           <View style={[styles.buttonContainer, {flex: 0.3}]}>
             <TouchableOpacity
-              onPress={this.onButtonPress.bind(this)}
+              disabled={this.state.isDisabled}
+              onPress={() => {
+                //Segunda validación por si de alguna forma se saltan la anterior
+                var strInicio = this.spHoraInicial.getSelected()
+                var arrInicio = strInicio.split(":")
+                var strFinal = this.spHoraFinal.getSelected()
+                var arrFinal = strFinal.split(":")
+
+                console.log(strInicio)
+                console.log(strFinal)
+
+                horaInicio = new Date(1970, 10, 1, arrInicio[0], arrInicio[1])
+                horaFinal = new Date(1970, 10, 1, arrFinal[0], arrFinal[1])
+
+                resta = (horaFinal - horaInicio) / 36e5
+
+                if (resta <= 0.5) {
+                  Alert.alert("¡Lo sentimos!", "Debes reservar por lo menos 1 hora para trabajar en este espacio, busca otro horario o considera reservar otro día")
+                }
+              }}
             >
               <View style={styles.button}>
                 <Text style={styles.buttonText}>RESERVAR</Text>
