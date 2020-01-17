@@ -658,7 +658,14 @@ export default class Formulario extends Component {
                   resta = (horaFinal - horaInicio) / 36e5
 
                   if (resta <= 0.5) {
-                    this.spHoraFinal.scrollToIndex(this.spHoraInicial.getSelectedIndex()+2)
+
+                    newIndex = this.spHoraInicial.getSelectedIndex()+2
+
+                    if(newIndex >= this.state.horasHorario.length-1){
+                      newIndex = this.state.horasHorario.length-1
+                    }
+
+                    this.spHoraFinal.scrollToIndex(newIndex)
                     console.log(resta)
                   }
 
