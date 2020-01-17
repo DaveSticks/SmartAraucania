@@ -22,13 +22,15 @@ export default class Formulario extends Component {
       name: '',
       id: '',
       counter: 0,
-      limite: 2,  // Cantidad de reservas permitidas en una semana por seccion
-      horas: 2,  // Maximo de horas de anticipacion a una reserva
+      limite: 0,  // Cantidad de reservas permitidas en una semana por seccion
+      horas: 0,  // Maximo de horas de anticipacion a una reserva
       animation: new Animated.Value(0),
       mesa: 0,
       silla: 'E',
       maxCupos: 32,
       status: false,
+      config: [],
+      level: null
     };
   }
 
@@ -82,22 +84,27 @@ export default class Formulario extends Component {
     }).start();
   };
 
-  getConfig = () => {
-    var configRef = firebase.database().ref('config/')
-    let thus = this
-    configRef.once('value').then(function(snapshot) {
-        var limiteReservas = snapshot.child('limiteReservas').val()
-        var horasMinimas = snapshot.child('horasMinimas').val()
+  handleDataFlow =  (ref, data) => {
+    thus = this
+    ref.on('child_added', (snapshot) => {
 
+      if (thus.state.level === snapshot.key) {
         thus.setState({
-          limite: limiteReservas
+          limite: snapshot.val().limiteReservas,
+          horas: snapshot.val().horasMinimas
         })
-
-        thus.setState({
-          horas: horasMinimas
-        })
-
+      }
+      data.push({rol: snapshot.key, horas: snapshot.val().horasMinimas, limite: snapshot.val().limiteReservas})
+      this.forceUpdate()
     })
+
+  }
+
+  getConfig = () => {
+
+    var configRef = firebase.database().ref('config/')
+
+    this.handleDataFlow(configRef, this.state.config)
 
   }
 
@@ -107,15 +114,22 @@ export default class Formulario extends Component {
       if (user) {
         thus.setState({name: user.displayName});
         thus.setState({id: user.uid});
+        userRef = firebase.database().ref('usuarios/'+user.uid)
+        userRef.once('value').then((data) => {
+          var level = data.child('level').val()
+          thus.setState({level}, () => {
+            thus.getConfig()
+          })
+        })
       } else {
         console.log('NO HAY USUARIO');
       }
+
     });
   };
 
   componentDidMount() {
     this.getCurrentUser();
-    this.getConfig()
   }
 
   parseDate(date) {
@@ -391,7 +405,6 @@ export default class Formulario extends Component {
     var seccion = ''
     thus = this
 
-
     if (this.state.horario == 'manana') {
       this.state.fecha.setHours(8, 59, 0, 0);
     } else if (this.state.horario == 'tarde') {
@@ -418,11 +431,19 @@ export default class Formulario extends Component {
     userRef = firebase.database().ref('usuarios/'+userId+'/reservas/'+seccion+'/'+ fechaSeleccionada)
     userDatesRef = firebase.database().ref('usuarios/'+userId+'/reservas/'+seccion)
 
-    if (this.state.fecha - today < this.state.horas*(3.6*(Math.pow(10,6)))) {
+    console.log("Horas: " + this.state.horas)
+    console.log("Limite: " + this.state.limite)
+
+    realHoras = (this.state.fecha - today) / 36e5
+    console.log("La fecha escogida es: " +this.state.fecha)
+    console.log("Hoy es: " + today)
+    console.log("La resta es: " + realHoras)
+
+    if (((this.state.fecha - today) / 36e5) < this.state.horas) {
 
       Alert.alert(
         '¡Lo sentimos!',
-        'Las reservas deben realizarse a lo mucho con 2 horas de anticipación, previo al uso del espacio.',
+        'Las reservas deben realizarse a lo mucho con '+ this.state.horas+ ' horas de anticipación, previo al uso del espacio.',
       );
 
     } else {
@@ -692,7 +713,26 @@ const styles = StyleSheet.create({
     marginHorizontal: '10%',
     justifyContent: 'center',
   },
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2196F3',
+    borderRadius: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.32,
+    shadowRadius: 3,
 
+    elevation: 5,
+
+  },
+  buttonText: {
+    padding: 10,
+    color: 'white'
+  },
   cover: {
     backgroundColor: "rgba(0,0,0,.5)",
   },

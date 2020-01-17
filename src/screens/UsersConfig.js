@@ -38,6 +38,7 @@ export default class UsersConfig extends Component {
       query: '',
       users: [],
       fullUsers: [],
+      img: '',
       animation: new Animated.Value(0),
       nombre: '',
       id: '',
@@ -58,6 +59,7 @@ export default class UsersConfig extends Component {
   componentDidMount() {
     this.props.navigation.setParams({ toggleDrawer: this._toggleDrawer });
     this.handleDataFlow(this.usersRef, this.state.users, this.state.fullUsers)
+    console.log(this.state.users.toString())
   }
 
   _toggleDrawer = () => {
@@ -170,7 +172,36 @@ export default class UsersConfig extends Component {
   }
 
   deleteUser = () => {
-    this.usersRef.child(this.state.id).remove()
+
+    var user = firebase.auth().currentUser;
+
+    if (user.uid === this.state.id) {
+      Alert.alert("¡Cuidado!", "No puedes eliminarte a ti mismo de la lista de usuarios aún, hazlo directamente desde la consola de Firebase o ponte en contacto con un administrador")
+    } else {
+
+      Alert.alert(
+        '¿Estas seguro?',
+        '\nEstás a punto de eliminar a este usuario de forma definitiva y permanente, no podrás deshacer los cambios ',
+        [
+          {
+            text: 'Volver',
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: (() => {
+            this.usersRef.child(this.state.id).remove()
+            aux = this.state.users.filter((x) => x.id !== this.state.id);
+            this.setState({
+              users: aux,
+              fullUsers: aux
+            }, () => {
+              this.handleClose()
+            })
+          })},
+        ],
+
+      );
+    }
+
   }
 
   renderItem = ({item, index}) => {
@@ -336,7 +367,7 @@ export default class UsersConfig extends Component {
               </View>
 
 
-              <TouchableOpacity onPress={this.handleClose}>
+              <TouchableOpacity style={{marginVertical: 10}} onPress={this.handleClose}>
                 <View style={styles.button}>
                   <Text style={[styles.buttonText, {color: 'white'}]}> VOLVER </Text>
                 </View>
@@ -392,7 +423,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.32,
     shadowRadius: 3,
 
-    elevation: 9,
+    elevation: 5,
 
     width: WIDTH*0.75
   },
