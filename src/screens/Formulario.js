@@ -7,6 +7,7 @@ import DatePicker from 'react-native-date-picker';
 import firebase from 'firebase';
 import LayoutMesas from '../components/layouts/Mesas/Layout.js'
 import LayoutSillas from '../components/layouts/Sillas/Layout.js'
+import ScrollPicker from 'react-native-picker-scrollview'
 
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').height;
@@ -30,8 +31,14 @@ export default class Formulario extends Component {
       maxCupos: 32,
       status: false,
       config: [],
-      level: null
+      level: null,
+      horaInicio: '',
+      horaFinal: '',
+      horasHorario: ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"]
     };
+
+    this.horasManiana = ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"]
+    this.horasTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00"]
   }
 
   reservarCowork = () => {
@@ -510,7 +517,7 @@ export default class Formulario extends Component {
 
     isDisabled = false;
     if (itemId == 0 || itemId == 1) {
-      texto = 'Cantidad de personas';
+      texto = 'Periodo de la reserva';
     } else {
       texto =
         'La reserva en este caso es solo de un espacio, si quiere usar más de uno otro usuario debe registrarlo.';
@@ -576,33 +583,92 @@ export default class Formulario extends Component {
             </Text>
             <Picker
               selectedValue={this.state.horario}
-              onValueChange={h => this.setState({horario: h})}
+              onValueChange={h => this.setState({horario: h}, () => {
+                if (h === 'manana') {
+                  this.setState({horasHorario: this.horasManiana}, () => {
+                    console.log(JSON.stringify(this.state.horasHorario))
+                  })
+                } else {
+                  this.setState({horasHorario: this.horasTarde}, () => {
+                    console.log(JSON.stringify(this.state.horasHorario))
+                  })
+                }
+              })}
               mode="dropdown">
               <Picker.Item label="Mañana" value="manana" />
               <Picker.Item label="Tarde" value="tarde" />
             </Picker>
           </View>
-          <View style={styles.input}>
-            <Text style={{fontSize: 16, fontWeight: 'bold', color: '#878F9B'}}>
-              {texto}
-            </Text>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Input
-                value={this.state.cant}
-                placeholder="1"
-                inputContainerStyle={{width: 30}}
-                containerStyle={{width: 30}}
-                disabled={isDisabled}
-                onChangeText={t => this.setState({cant: t})}
-                keyboardType={'numeric'}
-              />
-            </View>
+          <Text style={{marginHorizontal: '5%', fontSize: 16, fontWeight: 'bold', color: '#878F9B'}}>
+            {texto}
+          </Text>
+
+          <View style={styles.scrollpicker}>
+            <ScrollPicker
+                ref={(spHoraInicial) => {this.spHoraInicial = spHoraInicial}}
+                dataSource={this.state.horasHorario}
+                selectedIndex={0}
+                renderItem={(data, index, isSelected) => {
+                  return(
+                    <View>
+                      <Text >{data}</Text>
+                    </View>
+                  )
+                }}
+                onValueChange={(data, selectedIndex) => {
+                    this.setState({
+                      horaInicio: data
+                    }, () => {
+                      var str = this.state.horaInicio
+                      var arr = str.split(":")
+                      console.log(JSON.stringify(arr))
+
+                      if (selectedIndex < this.state.horasHorario.length-1) {
+                        this.spHoraFinal.scrollToIndex(selectedIndex+2)
+                      }
+
+                      console.log("Index de la tarde: " + this.spHoraFinal.getSelectedIndex())
+
+                    })
+                }}
+                wrapperHeight={100}
+                wrapperWidth={70}
+                wrapperColor={"#FFFFFF"}
+                itemHeight={30}
+                highlightColor={"#d8d8d8"}
+                highlightBorderWidth={2}
+                activeItemColor={"#222121"}
+                itemColor={"#B4B4B4"}
+            />
+            <Text style={{paddingHorizontal: 10, alignSelf: 'center', color: '#d8d8d8'}}> hasta </Text>
+            <ScrollPicker
+                ref={(spHoraFinal) => {this.spHoraFinal = spHoraFinal}}
+                dataSource={this.state.horasHorario}
+                selectedIndex={2}
+                renderItem={(data, index, isSelected) => {
+                  return(
+                    <View>
+                      <Text>{data}</Text>
+                    </View>
+                  )
+                }}
+                onValueChange={(data, selectedIndex) => {
+                    console.log(JSON.stringify(data))
+                    this.setState({
+                      horaFinal: data
+                    })
+                }}
+                wrapperHeight={100}
+                wrapperWidth={70}
+                wrapperColor={"#FFFFFF"}
+                itemHeight={30}
+                highlightColor={"#d8d8d8"}
+                highlightBorderWidth={2}
+                activeItemColor={"#222121"}
+                itemColor={"#B4B4B4"}
+            />
           </View>
-          <View style={styles.buttonContainer}>
+          <View style={[styles.buttonContainer, {flex: 0.3}]}>
             <TouchableOpacity
               onPress={this.onButtonPress.bind(this)}
             >
@@ -703,6 +769,13 @@ const styles = StyleSheet.create({
   input: {
     marginHorizontal: '5%',
     flex: 0.3,
+  },
+  scrollpicker: {
+    flexDirection: 'row',
+    marginHorizontal: '5%',
+    flex: 0.3,
+    marginVertical: 20,
+    justifyContent: 'center'
   },
   datepicker: {
     marginVertical: 10,
