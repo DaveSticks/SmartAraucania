@@ -274,13 +274,16 @@ export default class Formulario extends Component {
 
     // Sala de Eventos
     if (sectionId == 0) {
-      fechaRef.child(horario).set({
+      var strInicio = this.spHoraInicial.getSelected()
+      var strFinal = this.spHoraFinal.getSelected()
+
+      fechaRef.child(horario+'/'+strInicio+'-'+strFinal).set({
         nombre: this.state.name,
         cantidad: this.state.cant,
         id_duenio: this.state.id,
       });
 
-      userRef.child(horario).set({
+      userRef.child(horario+'/'+strInicio+'-'+strFinal).set({
         nombre: this.state.name,
         cantidad: this.state.cant,
       });
@@ -292,13 +295,16 @@ export default class Formulario extends Component {
 
     //Sala de Reuniones
     } else if (sectionId == 1) {
-      fechaRef.child(horario).set({
+      var strInicio = this.spHoraInicial.getSelected()
+      var strFinal = this.spHoraFinal.getSelected()
+
+      fechaRef.child(horario+'/'+strInicio+'-'+strFinal).set({
         nombre: this.state.name,
         cantidad: this.state.cant,
         id_duenio: this.state.id,
       });
 
-      userRef.child(horario).set({
+      userRef.child(horario+'/'+strInicio+'-'+strFinal).set({
         nombre: this.state.name,
         cantidad: this.state.cant,
       });
@@ -310,6 +316,8 @@ export default class Formulario extends Component {
 
     //Cowork
     } else if (sectionId == 2) {
+
+      console.log("Llego aqui")
 
       let thus = this
       var mesa = this.state.mesa
@@ -412,6 +420,25 @@ export default class Formulario extends Component {
     thus = this
 
 
+    if (itemId !== 2) {
+
+      var strInicio = this.spHoraInicial.getSelected()
+      var arrInicio = strInicio.split(":")
+      var strFinal = this.spHoraFinal.getSelected()
+      var arrFinal = strFinal.split(":")
+
+      horaInicio = new Date(1970, 10, 1, arrInicio[0], arrInicio[1])
+      horaFinal = new Date(1970, 10, 1, arrFinal[0], arrFinal[1])
+
+      resta = (horaFinal - horaInicio) / 36e5
+
+      if (resta <= 0.5) {
+        Alert.alert("¡Lo sentimos!", "Debes reservar por lo menos 1 hora para trabajar en este espacio, busca otro horario o considera reservar otro día")
+        return
+      }
+
+    }
+
 
     if (this.state.horario == 'manana') {
       this.state.fecha.setHours(8, 59, 0, 0);
@@ -460,8 +487,9 @@ export default class Formulario extends Component {
 
       fechaRef.once('value').then(function(data) {
 
-        var horarioExists = data.hasChild(horario);
-        var ownerId = data.child(horario+'/id_duenio').val()
+        var horarioExists = data.hasChild(horario+'/'+strInicio+'-'+strFinal);
+        var ownerId = data.child(horario+'/'+strInicio+'-'+strFinal+'/id_duenio').val()
+        console.log("OWNER ID" + ownerId)
 
         // Si la seccion de ID es de cowork lo del horario no corre
 
@@ -482,7 +510,7 @@ export default class Formulario extends Component {
 
             }
 
-          } else { //Cowork
+          } else { // El horario escogido está vacio, no existe.
 
             thus.checkWeek(userDatesRef, function() {
               thus.writeData(fechaRef, userRef, itemId);
@@ -612,7 +640,7 @@ export default class Formulario extends Component {
                 renderItem={(data, index, isSelected) => {
                   return(
                     <View>
-                      <Text >{data}</Text>
+                      <Text>{data}</Text>
                     </View>
                   )
                 }}
@@ -684,23 +712,7 @@ export default class Formulario extends Component {
             <TouchableOpacity
               disabled={this.state.isDisabled}
               onPress={() => {
-                //Segunda validación por si de alguna forma se saltan la anterior
-                var strInicio = this.spHoraInicial.getSelected()
-                var arrInicio = strInicio.split(":")
-                var strFinal = this.spHoraFinal.getSelected()
-                var arrFinal = strFinal.split(":")
-
-                console.log(strInicio)
-                console.log(strFinal)
-
-                horaInicio = new Date(1970, 10, 1, arrInicio[0], arrInicio[1])
-                horaFinal = new Date(1970, 10, 1, arrFinal[0], arrFinal[1])
-
-                resta = (horaFinal - horaInicio) / 36e5
-
-                if (resta <= 0.5) {
-                  Alert.alert("¡Lo sentimos!", "Debes reservar por lo menos 1 hora para trabajar en este espacio, busca otro horario o considera reservar otro día")
-                }
+                this.onButtonPress()
               }}
             >
               <View style={styles.button}>
