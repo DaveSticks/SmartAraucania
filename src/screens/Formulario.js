@@ -33,7 +33,8 @@ export default class Formulario extends Component {
       config: [],
       level: null,
       horasHorario: ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"],
-      isDisabled: false
+      isDisabled: false,
+      isWrittable: true
     };
 
     this.horasManiana = ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"]
@@ -90,6 +91,7 @@ export default class Formulario extends Component {
     }).start();
   };
 
+  //Fix limite, se actualiza solo cuando hay hijos, ¿y si no los hay?
   handleDataFlow =  (ref, data) => {
     thus = this
     ref.on('child_added', (snapshot) => {
@@ -136,6 +138,55 @@ export default class Formulario extends Component {
 
   componentDidMount() {
     this.getCurrentUser();
+  }
+
+  areDatesOverlaping = (ref) => {
+
+    ref.once('value').then( (data) => {
+      var arr = []
+      arr.push(data.val())
+
+      var keys = Object.keys(data.val())
+      /* console.log("Keys: " + keys)
+      console.log(keys[0])
+      console.log(keys[1]) */
+
+      for (var i = 0; i < keys.length; i++) {
+
+          var periodo = keys[i].split("-")
+          var periodoInicio = periodo[0]
+          var periodoFinal = periodo[1]
+
+          var arrPeriodoInicio = periodoInicio.split(":")
+          var arrPeriodoFinal = periodoFinal.split(":")
+
+          // arr[0] es la hora, arr[1] los minutos
+
+          let horaPeriodoInicio = new Date(1970, 10, 1, arrPeriodoInicio[0], arrPeriodoInicio[1])
+          let horaPeriodoFinal = new Date(1970, 10, 1, arrPeriodoFinal[0], arrPeriodoFinal[1])
+
+          // Ahora comparamos la hora obtenida en la data con la que está seleccionada
+
+          var strInicio = this.spHoraInicial.getSelected()
+          var arrInicio = strInicio.split(":")
+          var strFinal = this.spHoraFinal.getSelected()
+          var arrFinal = strFinal.split(":")
+
+          let horaSelectedInicio = new Date(1970, 10, 1, arrInicio[0], arrInicio[1])
+          let horaSelectedFinal = new Date(1970, 10, 1, arrFinal[0], arrFinal[1])
+
+          if ((horaPeriodoInicio < horaSelectedFinal) && (horaSelectedInicio < horaPeriodoFinal)) {
+            this.setState({isWrittable: false})
+            return Alert.alert("¡Cuidado!", "El periodo que escogiste se superpone con un periodo ya reservado previamente, intenta de nuevo con otro periodo o considera reservar otro día")
+          }
+
+          if (i === keys.length - 1) {
+            console.log("se acabo")
+          }
+      }
+
+    })
+
   }
 
   parseDate(date) {
@@ -218,6 +269,9 @@ export default class Formulario extends Component {
     thus = this;
 
     userDatesRef.on('value', function(data) {
+
+      userDatesRef.off('value'); //Apaga el listener para que no se repita, bug de firebase
+
       for (var i = 0; i <= 6; i++) {
 
         if (firstDay + aux > totalDias.getDate()) {
@@ -237,13 +291,11 @@ export default class Formulario extends Component {
           new Date(anioSelected, monthSelected, firstDay + aux),
         );
 
-        console.log(fechaFinal);
-
         if (data.hasChild(fechaFinal)) { //Tiene un hijo llamado igual que la fecha
 
           if (data.child(fechaFinal).hasChildren()){ // El hijo tiene hijos
-            counter += data.child(fechaFinal).numChildren(); //Se suma la cantidad de hijos al contador
-            console.log("Contador: " + counter)
+            counter += data.child(fechaFinal+'/manana').numChildren(); //Se suma la cantidad de hijos al contador
+            counter += data.child(fechaFinal+'/tarde').numChildren(); //Se suma la cantidad de hijos al contador
           }
 
         }
@@ -253,7 +305,10 @@ export default class Formulario extends Component {
 
       aux = 0;
 
-      thus.setState({counter});
+      thus.setState({counter}, () => {
+        console.log("State Contador: " + thus.state.counter)
+      });
+
 
       if (thus.state.counter >= thus.state.limite) {
         Alert.alert(
@@ -264,8 +319,10 @@ export default class Formulario extends Component {
         callback(); //Llama a writeData()
       }
 
-      userDatesRef.off('value'); //Apaga el listener para que no se repita
+      console.log("TERMINÓ")
+
     });
+
   };
 
   writeData = (fechaRef, userRef, sectionId) => {
@@ -316,8 +373,6 @@ export default class Formulario extends Component {
 
     //Cowork
     } else if (sectionId == 2) {
-
-      console.log("Llego aqui")
 
       let thus = this
       var mesa = this.state.mesa
@@ -419,7 +474,6 @@ export default class Formulario extends Component {
     var seccion = ''
     thus = this
 
-
     if (itemId !== 2) {
 
       var strInicio = this.spHoraInicial.getSelected()
@@ -438,7 +492,6 @@ export default class Formulario extends Component {
       }
 
     }
-
 
     if (this.state.horario == 'manana') {
       this.state.fecha.setHours(8, 59, 0, 0);
@@ -473,6 +526,16 @@ export default class Formulario extends Component {
     console.log("La fecha escogida es: " +this.state.fecha)
     console.log("Hoy es: " + today)
     console.log("La resta es: " + realHoras)
+
+    this.setState({isWrittable: true})
+
+    await this.areDatesOverlaping(firebase.database().ref('fechas/'+seccion+'/' + fechaSeleccionada+'/'+horario))
+
+    canWrite = this.state.isWrittable
+
+    if (!canWrite) {
+      return
+    }
 
     if (((this.state.fecha - today) / 36e5) < this.state.horas) {
 
@@ -519,6 +582,7 @@ export default class Formulario extends Component {
 
           }
 
+        //Cowork
         } else {
 
           thus.checkWeek(userDatesRef, function() {
@@ -694,7 +758,7 @@ export default class Formulario extends Component {
                     }
 
                     this.spHoraFinal.scrollToIndex(newIndex)
-                    console.log(resta)
+
                   }
 
                 }}

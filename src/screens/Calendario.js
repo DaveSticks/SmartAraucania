@@ -11,7 +11,9 @@ import { Platform, StyleSheet, Text, View, Card, Button, ActivityIndicator, Dime
 import { Calendar, CalendarList, Agenda, LocaleConfig } from 'react-native-calendars';
 import MaterialInitials from 'react-native-material-initials/native';
 import firebase from 'firebase';
-import { Icon } from 'react-native-elements'
+import { Icon, Image } from 'react-native-elements'
+import IconManana from '../resources/mañana.png'
+import IconTarde from '../resources/tarde.png'
 
 const WIDTH = Dimensions.get('window').width
 const HEIGHT = Dimensions.get('window').height
@@ -101,37 +103,38 @@ class Calendario extends Component<Props> {
 
   handleDataFlow(ref, data) {
 
-  var aux = []
+    var aux = []
 
-    ref.on("child_added", (snapshot) => {
+      ref.on("child_added", (snapshot) => {
 
-      aux.push(snapshot.val()) //Mañana y tarde almacenados como arreglo.
+        aux.push(snapshot.val()) //Mañana y tarde almacenados como arreglo.
 
-      data[snapshot.key] = aux; // this.items[fecha] = arreglo aux
+        data[snapshot.key] = aux; // this.items[fecha] = arreglo aux
 
-      aux = [];
+        aux = [];
 
-      this.setState({isLoading: false})
-      this.forceUpdate()
-    })
+        this.setState({isLoading: false})
+        this.forceUpdate()
+      })
 
-    ref.on("child_removed", (snapshot) => {
-      delete data[snapshot.key]
-      this.forceUpdate()
-    })
+      ref.on("child_removed", (snapshot) => {
+        delete data[snapshot.key]
+        this.forceUpdate()
+      })
 
-    ref.on("child_changed", (snapshot) => {
+      ref.on("child_changed", (snapshot) => {
 
-      aux = [];
-      data[snapshot.key] = [];
+        aux = [];
+        data[snapshot.key] = [];
 
-      aux.push(snapshot.val())
+        aux.push(snapshot.val())
 
-      data[snapshot.key] = aux;
+        data[snapshot.key] = aux;
 
-      aux = [];
-      this.forceUpdate()
-    })
+        aux = [];
+        this.forceUpdate()
+        console.log("SE MODIFICARON HIJOS")
+      })
 
   }
 
@@ -160,30 +163,39 @@ class Calendario extends Component<Props> {
     }
   }
 
-  renderItem(item) {
+  renderItem(item, firstItemInDay) {
 
     const { navigation } = this.props;
     const itemId = navigation.getParam('itemId', '0');
 
-    var text = ''
+    if (itemId != 2) {
+      arr = Object.values(item)
 
-    if(itemId == 0 || itemId == 1) {
-      text = 'personas'
-    } else {
-      text = 'espacios'
-    }
+      var horariosObjeto = {}
+      var horarios = []
+      var manana = []
+      var tarde = []
 
-    console.log("Item: " + item.manana.cantidad)
+      if (item.manana){
+        manana = Object.keys(item.manana)
+        horarios = [...horarios, ...manana]
+        horariosObjeto = {...horariosObjeto, ...item.manana}
+      }
 
-    if (item.manana !== undefined && item.tarde !== undefined) {
-      return (
-        <View style={{flex: 1, flexDirection: 'column'}}>
-          <View style={{flex: 1, flexDirection: 'column'}}>
+      if (item.tarde){
+        tarde = Object.keys(item.tarde)
+        horarios = [...horarios, ...tarde]
+        horariosObjeto = {...horariosObjeto, ...item.tarde}
+      }
+
+      listaHorarios = horarios.map((periodoInfo, key) => {
+
+        return (
+          <View key={key}>
             <View style={[styles.item, {height: item.height, width: WIDTH*0.80}]}>
-              <View style={{width: WIDTH*0.60}}>
-                <Text style={{fontWeight: 'bold', fontSize: 15}}>Mañana</Text>
-                <Text style={{fontSize: 14}}>{item['manana'].cantidad} {text}</Text>
-                <Text style={{fontSize: 14}}>{item['manana'].nombre}</Text>
+              <View style={{width: WIDTH*0.60, justifyContent: 'center'}}>
+                <Text style={{fontWeight: 'bold', fontSize: 15}}>{periodoInfo}</Text>
+                <Text style={{fontSize: 14}}>{horariosObjeto[periodoInfo].nombre}</Text>
               </View>
               <View style={{justifyContent: 'center'}}>
                 <MaterialInitials
@@ -191,78 +203,69 @@ class Calendario extends Component<Props> {
                   backgroundColor={this.randomizeColor()}
                   color={'white'}
                   size={40}
-                  text={item['manana'].nombre}
+                  text={horariosObjeto[periodoInfo].nombre}
                   single={false}
                 />
               </View>
             </View>
           </View>
-          <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={[styles.item, {height: item.height, width: WIDTH*0.80}]}>
-              <View style={{width: WIDTH*0.60}}>
-                <Text style={{fontWeight: 'bold', fontSize: 15}}>Tarde</Text>
-                <Text style={{fontSize: 14}}>{item['tarde'].cantidad} {text}</Text>
-                <Text style={{fontSize: 14}}>{item['tarde'].nombre}</Text>
+        )
+
+      });
+
+
+      return(
+        <View>
+          {listaHorarios}
+        </View>
+      )
+    } else {
+
+      var horariosObjeto = {}
+      var horarios = []
+      var manana = []
+      var tarde = []
+
+      /* if (item.manana){
+        manana = Object.keys(item.manana)
+        manana = manana.filter((x) => x !== 'cupos_restantes')
+        horariosManana = [...horarios, ...manana]
+        horariosObjeto = {...horariosObjeto, ...item.manana}
+      }
+
+      if (item.tarde){
+        tarde = Object.keys(item.tarde)
+        tarde = tarde.filter((x) => x !== 'cupos_restantes')
+        horariosTarde = [...horarios, ...tarde]
+        horariosObjeto = {...horariosObjeto, ...item.tarde}
+      }
+      */
+
+      return(
+        <View>
+          <View style={[styles.item, {height: item.height, width: WIDTH*0.80, flexDirection: 'column'}]}>
+            <View style={{width: WIDTH*0.60, justifyContent: 'center'}}>
+              <View style={{flexDirection: 'row'}}>
+                <Image source={IconManana} style={styles.icon}/>
+                <Text style={{fontWeight: 'bold', fontSize: 15, marginLeft: 15}}>Mañana</Text>
               </View>
-              <View style={{justifyContent: 'center'}}>
-                <MaterialInitials
-                  style={{alignSelf: 'center'}}
-                  backgroundColor={this.randomizeColor()}
-                  color={'white'}
-                  size={40}
-                  text={item['manana'].nombre}
-                  single={false}
-                />
+              <Text style={{fontSize: 14}}>{item.manana ? item.manana.cupos_restantes : 32} espacios disponibles</Text>
+            </View>
+            <Text> </Text>
+            <View style={{width: WIDTH*0.60, justifyContent: 'center'}}>
+              <View style={{flexDirection: 'row'}}>
+                <Image source={IconTarde} style={styles.icon}/>
+                <Text style={{fontWeight: 'bold', fontSize: 15, marginLeft: 15}}>Tarde</Text>
               </View>
+              <Text style={{fontSize: 14}}>{item.tarde ? item.tarde.cupos_restantes : 32} espacios disponibles</Text>
             </View>
           </View>
         </View>
-      );
-    } else if (item.manana !== undefined && item.tarde == undefined) {
-      return (
-          <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={[styles.item, {height: item.height, width: WIDTH*0.80}]}>
-              <View style={{width: WIDTH*0.60}}>
-                <Text style={{fontWeight: 'bold', fontSize: 15}}>Mañana</Text>
-                <Text style={{fontSize: 14}}>{item['manana'].cantidad} {text}</Text>
-                <Text style={{fontSize: 14}}>{item['manana'].nombre}</Text>
-              </View>
-              <View style={{justifyContent: 'center'}}>
-                <MaterialInitials
-                  style={{alignSelf: 'center'}}
-                  backgroundColor={this.randomizeColor()}
-                  color={'white'}
-                  size={40}
-                  text={item['manana'].nombre}
-                  single={false}
-                />
-              </View>
-            </View>
-          </View>
-      );
-    } else if (item.tarde !== undefined && item.manana == undefined){
-      return (
-          <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={[styles.item, {height: item.height, width: WIDTH*0.80}]}>
-              <View style={{width: WIDTH*0.60}}>
-                <Text style={{fontWeight: 'bold', fontSize: 15}}>Tarde</Text>
-                <Text style={{fontSize: 14}}>{item['tarde'].cantidad} {text}</Text>
-                <Text style={{fontSize: 14}}>{item['tarde'].nombre}</Text>
-              </View>
-              <View style={{justifyContent: 'center'}}>
-                <MaterialInitials
-                  style={{alignSelf: 'center'}}
-                  backgroundColor={this.randomizeColor()}
-                  color={'white'}
-                  size={40}
-                  text={item['tarde'].nombre}
-                  single={false}
-                />
-              </View>
-            </View>
-          </View>
-      );
+      )
+
     }
+
+
 
   }
 
@@ -379,6 +382,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginTop: 17
   },
+  icon: {
+    height: 20,
+    width: 20,
+  }
 });
 
 LocaleConfig.locales['es'] = {
