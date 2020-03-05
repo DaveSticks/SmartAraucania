@@ -6,7 +6,8 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import { Icon, Card } from 'react-native-elements'
 import Carousel from 'react-native-snap-carousel'
@@ -20,6 +21,7 @@ export default class Home extends Component {
     super(props);
     this.state = {
       selectedIndex: 0,
+      buttonIsLoading: false,
       entries: [
         {
           titulo: 'Sala de Eventos',
@@ -61,6 +63,10 @@ export default class Home extends Component {
   }
 
   render() {
+
+    const normalText = <Text style={styles.buttonText}>SELECCIONAR</Text>
+    const loadingText = <ActivityIndicator />
+
     return (
       <View style={styles.container}>
           <Carousel
@@ -80,12 +86,20 @@ export default class Home extends Component {
                         <Text />
                         <TouchableOpacity
                           onPress={() => {
-                          this.props.navigation.navigate('Calendario', {
-                            itemId: this.state.selectedIndex,
-                          });
+                          this.setState({
+                            buttonIsLoading: true
+                          }, () => {
+                            this.props.navigation.navigate('Calendario', {
+                              itemId: this.state.selectedIndex,
+                            });
+
+                            this.setState({
+                              buttonIsLoading: false
+                            })
+                          })
                         }}>
                           <View style={styles.button}>
-                            <Text style={styles.buttonText}>SELECCIONAR</Text>
+                            {this.state.buttonIsLoading ? loadingText : normalText}
                           </View>
                         </TouchableOpacity>
                         <Text />

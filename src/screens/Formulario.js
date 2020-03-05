@@ -95,15 +95,26 @@ export default class Formulario extends Component {
   handleDataFlow =  (ref, data) => {
     thus = this
     ref.on('child_added', (snapshot) => {
-
       if (thus.state.level === snapshot.key) {
         thus.setState({
           limite: snapshot.val().limiteReservas,
           horas: snapshot.val().horasMinimas
         })
       }
-      data.push({rol: snapshot.key, horas: snapshot.val().horasMinimas, limite: snapshot.val().limiteReservas})
+      // data.push({rol: snapshot.key, horas: snapshot.val().horasMinimas, limite: snapshot.val().limiteReservas})
       this.forceUpdate()
+
+    })
+
+    ref.on('child_changed', (snapshot) => {
+      if (thus.state.level === snapshot.key) {
+        thus.setState({
+          limite: snapshot.val().limiteReservas,
+          horas: snapshot.val().horasMinimas
+        })
+      }
+      this.forceUpdate()
+
     })
 
   }
@@ -493,11 +504,20 @@ export default class Formulario extends Component {
 
     }
 
+    var strInicio = this.spHoraInicial.getSelected()
+    var arrInicio = strInicio.split(":")
+    var horaInicio = arrInicio[0]
+
     if (this.state.horario == 'manana') {
       this.state.fecha.setHours(8, 59, 0, 0);
     } else if (this.state.horario == 'tarde') {
       this.state.fecha.setHours(14, 59, 0, 0);
     }
+
+    console.log("Hora inicial: " + this.spHoraInicial.getSelected())
+    console.log("Hora final: " + this.spHoraFinal.getSelected())
+
+
 
     var diaSemana = await this.state.fecha.getDay();
     var fechaSeleccionada = this.parseDate(this.state.fecha);

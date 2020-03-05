@@ -76,6 +76,8 @@ class Calendario extends Component<Props> {
     this.state = {
       selectedDay: getToday(),
       isLoading: true,
+      isEmpty: false,
+      itemId: 0
     }
     var database = firebase.database();
 
@@ -95,9 +97,29 @@ class Calendario extends Component<Props> {
 
   componentDidMount(){
 
-    this.handleDataFlow(this.eveRef, this.itemsEve)
-    this.handleDataFlow(this.reuRef, this.itemsReu)
-    this.handleDataFlow(this.cwrkRef, this.itemsCwrk)
+    this.checkSelectedIndex()
+
+  }
+
+  checkSelectedIndex = () => {
+
+    const { navigation } = this.props;
+    const itemId = navigation.getParam('itemId', '0');
+
+    this.setState({
+      itemId
+    }, () => {
+
+      console.log("ESPACIO SELECCIONADO: " + this.state.itemId)
+      if (this.state.itemId == 0){
+        this.handleDataFlow(this.eveRef, this.itemsEve)
+      } else if (this.state.itemId == 1){
+        this.handleDataFlow(this.reuRef, this.itemsReu)
+      } else {
+        this.handleDataFlow(this.cwrkRef, this.itemsCwrk)
+      }
+
+    })
 
   }
 
@@ -114,6 +136,7 @@ class Calendario extends Component<Props> {
         aux = [];
 
         this.setState({isLoading: false})
+        this.setState({isEmpty: false})
         this.forceUpdate()
       })
 
@@ -135,6 +158,12 @@ class Calendario extends Component<Props> {
         this.forceUpdate()
         console.log("SE MODIFICARON HIJOS")
       })
+
+      setTimeout(() => {
+        if (this.state.isLoading) {
+          this.setState({ isLoading: false, isEmpty: true })
+        }
+      }, 5000)
 
   }
 

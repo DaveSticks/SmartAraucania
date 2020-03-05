@@ -38,9 +38,9 @@ export default class FAQ extends Component {
           </Text>
           <Text></Text>
           <Text style={styles.normal}>
-            Exactamente dos por semana y según el espacio. Por ejemplo, puedes
-            tener dos reservas en el espacio de Cowork y una en el espacio de
-            Eventos para la misma semana.
+            El limite de reservas por semana varía según el permiso de usuario
+            que tengas. Por defecto para un usuario común son 4 reservas.
+            Pronto podrás consultarlo en una sección aparte.
           </Text>
           <Text></Text>
           <Text style={styles.titulo}>
@@ -48,11 +48,9 @@ export default class FAQ extends Component {
           </Text>
           <Text></Text>
           <Text style={styles.normal}>
-            Tu reserva está limitada para un rango de 7 días a partir de la fecha
-            actual. Es decir, si hoy es miércoles no puedes reservar para el
-            próximo jueves.
-            Además las reservas deben realizarse a lo sumo con un día de
-            anticipación, previo al uso del espacio.
+            Al igual que el límite de reservas por semana varía según el
+            permiso del usuario, esta anticipación también varía dependiendo
+            del nivel de usuario. Por defecto corresponde a 2 horas.
           </Text>
           <Text></Text>
           <Text style={styles.titulo}>
@@ -65,7 +63,7 @@ export default class FAQ extends Component {
           </Text>
           <Text></Text>
           <Text style={styles.titulo}>
-            ¿Que horarios existen?
+            ¿Como funcionan los horarios del Co-work?
           </Text>
           <Text></Text>
           <Text style={styles.normal}>
@@ -84,7 +82,7 @@ export default class FAQ extends Component {
           </Text>
           <Text></Text>
           <Text style={styles.titulo}>
-            ¿Que es ese codigo debajo de mi correo en el menú desplegable?
+            ¿Que es esa combinación de numeros y letras debajo de mi correo en el menú desplegable?
           </Text>
           <Text></Text>
           <Text style={styles.normal}>

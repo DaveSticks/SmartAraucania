@@ -163,6 +163,8 @@ export default class Reservas extends Component {
       texto = 'Ambas'
     }
 
+    console.log(item.horarios)
+
     return (
       <View style={{flex: 1, flexDirection: 'row', borderColor: 'gray', borderWidth: 0.2, borderTopWidth: 0, paddingVertical: 10}}>
         <View style={styles.leftContainer}>

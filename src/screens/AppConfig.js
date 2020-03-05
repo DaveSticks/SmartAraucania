@@ -23,8 +23,8 @@ export default class AppConfig extends Component {
     super(props);
     this.state = {
       level: 'user',
-      limiteReservas: 0,
-      horasMinimas: 0,
+      limiteReservas: '',
+      horasMinimas: '',
       selectedId: ''
     };
   }
@@ -38,6 +38,7 @@ export default class AppConfig extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({ toggleDrawer: this._toggleDrawer });
+    this.getConfig()
   }
 
   _toggleDrawer = () => {
@@ -64,6 +65,25 @@ export default class AppConfig extends Component {
     this.setHorasMinimas()
   }
 
+  getConfig = () => {
+    console.log("Entró el getConfig")
+    var configRef = firebase.database().ref('config/'+this.state.level)
+    thus = this
+    configRef.once('value').then((data) => {
+      console.log(data.val())
+       var limite = data.child('limiteReservas').val()
+       var horas = data.child('horasMinimas').val()
+       thus.setState({
+         limiteReservas: limite,
+         horasMinimas: horas
+       }, () => {
+         console.log("Nivel: " + thus.state.level)
+         console.log("Limite: " + thus.state.limiteReservas)
+         console.log("Horas: " + thus.state.horasMinimas)
+       })
+    })
+  }
+
 
   render() {
     return (
@@ -72,7 +92,9 @@ export default class AppConfig extends Component {
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={this.state.level}
-            onValueChange={l => this.setState({level: l})}
+            onValueChange={l => this.setState({level: l}, () => {
+              this.getConfig()
+            })}
             style={{width: WIDTH * 0.9, alignItems: 'center', alignSelf: 'center', justifyContent: 'center'}}
             mode="dropdown">
             <Picker.Item label="Usuario" value="user" />
@@ -89,6 +111,7 @@ export default class AppConfig extends Component {
               <Input
                 textAlign={'center'}
                 value={this.state.limiteReservas}
+                placeholder={this.state.limiteReservas}
                 onChangeText={limiteReservas => this.setState({limiteReservas})}
                 keyboardType={'numeric'}
               />
@@ -101,6 +124,7 @@ export default class AppConfig extends Component {
             <View style={styles.inputContainer}>
               <Input
                 textAlign={'center'}
+                placeholder={this.state.horasMinimas}
                 value={this.state.horasMinimas}
                 onChangeText={horasMinimas => this.setState({horasMinimas})}
                 keyboardType={'numeric'}
