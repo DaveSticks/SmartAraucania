@@ -12,7 +12,7 @@
     "firebase": "^6.6.0",
     "firebase-admin": "^8.9.1",
     "react": "16.8.6",
-    "react-native": "0.60.5",
+    "react-native": "0.62.3",
     "react-native-calendars": "^1.212.0",
     "react-native-date-picker": "^2.7.0",
     "react-native-elements": "^1.2.0",
